@@ -1,13 +1,20 @@
 Google OpenRTB Libraries - SOVRN fork
 ----------------------------------------------------------------------
 
-This library supports the OpenRTB specification, providing
-bindings for all protobuf-supported languages, and additional
-support for Java such as JSON serialization and validation.
+This library supports the OpenRTB specification and providing
+bindings for all protobuf-supported languages.
 
 See our [wiki](https://github.com/google/openrtb/wiki) to get started!
 Use the Github issue tracker for bugs, RFEs or any support. Check the
 [changelog](CHANGELOG.md) for detailed release notes.
+
+
+WHEN TO ARCHIVE THE REPO
+----------------------------------------------------------------------
+
+This fork exists only because [the original google protobuf](https://github.com/google/openrtb/blob/76961915396c842cf0a0940e9bfdbaee997cba3e/openrtb-core/src/main/protobuf/openrtb.proto) doesn't support the `site.content.data` field which is in the Open RTB standard.
+
+As soon as it's not the case, please use the original library and archive this repo.  
 
 
 BUILDING NOTES
