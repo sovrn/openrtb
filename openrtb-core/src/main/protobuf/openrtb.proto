@@ -215,7 +215,6 @@ message BidRequest {
     // Array of exchange-specific names of supported iframe busters.
     repeated string iframebuster = 10;
 
-
     // A Pmp object (Section 3.2.17) containing any private marketplace deals
     // in effect for this impression.
     optional Pmp pmp = 11;
@@ -1180,7 +1179,6 @@ message BidRequest {
     // Supported by Google.
     optional UserAgent sua = 31;
 
-
     // Extensions.
     extensions 100 to 9999;
   }
@@ -1482,11 +1480,6 @@ message BidResponse {
       // Set of attributes describing the creative.
       repeated CreativeAttribute attr = 11 [packed = true];
 
-      // List of supported APIs for the markup. If an API is not explicitly
-      // listed, it is assumed to be unsupported.
-      // Ignored by Google.
-      repeated APIFramework apis = 31 [packed = true];
-
       // API required by the markup if applicable.
       optional APIFramework api = 18;
 
@@ -1542,6 +1535,11 @@ message BidResponse {
       // Relative height of the creative when expressing size as a ratio.
       // Required for Flex Ads.
       optional int32 hratio = 27;
+
+      // List of supported APIs for the markup. If an API is not explicitly
+      // listed, it is assumed to be unsupported.
+      // Ignored by Google.
+      repeated APIFramework apis = 31 [packed = true];
 
       // Duration of the video or audio creative in seconds.
       // Ignored by Google.
@@ -2876,7 +2874,6 @@ enum CreativeMarkupType {
   // object specification.
   CREATIVE_MARKUP_NATIVE = 4;
 }
-
 
 // ***** OpenRTB Native enums **************************************************
 
