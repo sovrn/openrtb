@@ -230,6 +230,14 @@ message BidRequest {
     // An array of Metric object (Section 3.2.5).
     repeated Metric metric = 17;
 
+    // Indicates whether the user receives a reward for viewing the ad.
+    // Typically video ad implementations allow users to read an additional news
+    // article for free, receive an extra life in a game, or get a sponsored
+    // ad-free music session. The reward is typically distributed after the
+    // video ad is completed.
+    // Supported by Google.
+    optional bool rwdd = 18 [default = false];
+
     // Extensions.
     extensions 100 to 9999;
 
@@ -1100,6 +1108,77 @@ message BidRequest {
     // and MNC parts is required to remove parsing ambiguity.
     optional string mccmnc = 30;
 
+    // Structured user agent information, which can be used when a client
+    // supports User-Agent Client Hints: https://wicg.github.io/ua-client-hints/
+    //
+    // Note: When available, fields are sourced from Client Hints HTTP headers
+    // or equivalent JavaScript accessors from the NavigatorUAData interface.
+    // For agents that have no support for User-Agent Client Hints, an exchange
+    // can also extract information from the parsed User-Agent header, so this
+    // object can always be used as the source of the user agent information.
+    message UserAgent {
+      // Identifies a device's browser or similar software component, and the
+      // user agent's execution platform or operating system.
+      message BrandVersion {
+        // A brand identifier, for example, "Chrome" or "Windows". The value may
+        // be sourced from the User-Agent Client Hints headers, representing
+        // either the user agent brand (from the Sec-CH-UA-Full-Version header)
+        // or the platform brand (from the Sec-CH-UA-Platform header).
+        // Not supported by Google.
+        optional string brand = 1;
+
+        // A sequence of version components, in descending hierarchical order
+        // (major, minor, micro, ...).
+        // Not supported by Google.
+        repeated string version = 2;
+      }
+
+      // Each BrandVersion object identifies a browser or similar software
+      // component. Exchanges should send brands and versions derived from
+      // the Sec-CH-UA-Full-Version-List header.
+      // Not supported by Google.
+      repeated BrandVersion browsers = 1;
+
+      // Identifies the user agent's execution platform / OS. Exchanges should
+      // send a brand derived from the Sec-CH-UA-Platform header, and version
+      // derived from the Sec-CH-UAPlatform-Version header.
+      // Not supported by Google.
+      optional BrandVersion platform = 2;
+
+      // true if the agent prefers a "mobile" version of the content if
+      // available, meaning optimized for small screens or touch input. false if
+      // the agent prefers the "desktop" or "full" content. Exchanges should
+      // derive this value from the Sec-CH-UAMobile header.
+      // Not supported by Google.
+      optional bool mobile = 3;
+
+      // Device's major binary architecture, for example, "x86" or "arm".
+      // Exchanges should retrieve this value from the Sec-CH-UA-Arch header.
+      // Not supported by Google.
+      optional string architecture = 4;
+
+      // Device's bitness, for example, "64" for 64-bit architecture. Exchanges
+      // should retrieve this value from the Sec-CH-UA-Bitness header.
+      // Not supported by Google.
+      optional string bitness = 5;
+
+      // Device model. Exchanges should retrieve this value from the
+      // Sec-CH-UAModel header.
+      // Not supported by Google.
+      optional string model = 6;
+
+      // The source of data for the User Agent information.
+      // Supported by Google.
+      optional UserAgentSource source = 7;
+    }
+
+    // Structured user agent information. If both Device.ua and Device.sua are
+    // present in the bid request, Device.sua should be considered the more
+    // accurate representation of the device attributes. This is because
+    // Device.ua may contain a frozen or reduced user agent string.
+    // Supported by Google.
+    optional UserAgent sua = 31;
+
     // Extensions.
     extensions 100 to 9999;
   }
@@ -1456,6 +1535,20 @@ message BidResponse {
       // Relative height of the creative when expressing size as a ratio.
       // Required for Flex Ads.
       optional int32 hratio = 27;
+
+      // List of supported APIs for the markup. If an API is not explicitly
+      // listed, it is assumed to be unsupported.
+      // Ignored by Google.
+      repeated APIFramework apis = 31 [packed = true];
+
+      // Duration of the video or audio creative in seconds.
+      // Ignored by Google.
+      optional int32 dur = 32;
+
+      // Type of the creative markup so that it can properly be
+      // associated with the right sub-object of the BidRequest.Imp.
+      // Ignored by Google.
+      optional CreativeMarkupType mtype = 33;
 
       // Extensions.
       extensions 100 to 9999;
@@ -2384,6 +2477,14 @@ enum APIFramework {
   MRAID_3 = 6;
 
   OMID_1 = 7;
+
+  // Secure Interactive Media Interface Definition Version 1.0.
+  // See https://iabtechlab.com/simid/.
+  SIMID_1_0 = 8;
+
+  // Secure Interactive Media Interface Definition Version 1.1.
+  // See https://iabtechlab.com/simid/.
+  SIMID_1_1 = 9;
 }
 
 // OpenRTB 2.0: The following table specifies the position of the ad as a
@@ -2739,6 +2840,39 @@ enum VolumeNormalizationMode {
   PEAK_VOLUME = 2;
   LOUDNESS = 3;
   CUSTOM_VOLUME = 4;
+}
+
+// Possible sources for User-Agent data.
+enum UserAgentSource {
+  UNKNOWN_SOURCE = 0;
+
+  // User-Agent Client Hints (only low-entropy headers were available).
+  CLIENT_HINTS_LOW_ENTROPY = 1;
+
+  // User-Agent Client Hints (with high-entropy headers available).
+  CLIENT_HINTS_HIGH_ENTROPY = 2;
+
+  // Parsed from User-Agent header.
+  USER_AGENT_STRING = 3;
+}
+
+// OpenRTB 2.6: Creative markup types.
+enum CreativeMarkupType {
+  // Ad markup returned as HTML code in response to the BidRequest.imp.banner
+  // object specification.
+  CREATIVE_MARKUP_BANNER = 1;
+
+  // VAST URL or inline VAST XML document returned that represents a video ad in
+  // response to the BidRequest.imp.video object specification.
+  CREATIVE_MARKUP_VIDEO = 2;
+
+  // VAST URL or inline VAST XML document that represents an audio ad returned
+  // in response to the BidRequest.imp.audio object specification.
+  CREATIVE_MARKUP_AUDIO = 3;
+
+  // Native markup response object returned as per for the BidRequest.imp.native
+  // object specification.
+  CREATIVE_MARKUP_NATIVE = 4;
 }
 
 // ***** OpenRTB Native enums **************************************************
