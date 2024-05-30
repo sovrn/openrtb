@@ -143,6 +143,97 @@ message BidRequest {
     // RECOMMENDED by the OpenRTB specification.
     optional string pchain = 3;
 
+    // This object is composed of a set of nodes where each node represents a
+    // specific entity that participates in the transacting of inventory.
+    // The entire chain of nodes from beginning to end represents all entities
+    // who are involved in the direct flow of payment for inventory. Detailed
+    // implementation examples can be found here:
+    // https://github.com/InteractiveAdvertisingBureau/openrtb/blob/master/supplychainobject.md
+    message SupplyChain {
+      // Indicates whether the chain contains all nodes involved in the
+      // transaction leading back to the owner of the site, app or other medium
+      // of the inventory.
+      // REQUIRED by the OpenRTB specification.
+      // Supported by Google.
+      optional bool complete = 1;
+
+      // The identity of an entity participating in the supply chain.
+      message SupplyChainNode {
+        // The canonical domain name of the SSP, Exchange, Header Wrapper, etc
+        // system that bidders connect to. This may be the operational domain of
+        // the system, if that is different than the parent corporate domain, to
+        // facilitate WHOIS and reverse IP lookups to establish clear ownership
+        // of the delegate system. This should be the same value as used to
+        // identify sellers in an ads.txt file if one exists.
+        // REQUIRED by the OpenRTB specification.
+        // Supported by Google.
+        optional string asi = 1;
+
+        // The identifier associated with the seller or reseller account
+        // within the advertising system. This must contain the same value
+        // used in transactions (OpenRTB bid requests) in the field
+        // specified by the SSP/exchange. Typically, in OpenRTB, this is
+        // publisher.id. For OpenDirect it is typically the publisher's
+        // organization ID. Should be limited to 64 characters in length.
+        // REQUIRED by the OpenRTB specification.
+        // Supported by Google.
+        optional string sid = 2;
+
+        // The OpenRTB RequestId of the request as issued by this seller.
+        // Not supported by Google.
+        optional string rid = 3;
+
+        // The name of the company (the legal entity) that has paid for
+        // inventory transacted under the given seller_ID. This value is
+        // optional and should NOT be included if it exists in the
+        // advertising system’s sellers.json file.
+        // Not supported by Google.
+        optional string name = 4;
+
+        // The business domain name of the entity represented by this
+        // node. This value is optional and should NOT be included if it
+        // exists in the advertising system’s sellers.json file.
+        // Not supported by Google.
+        optional string domain = 5;
+
+        // Indicates whether this node will be involved in the flow of payment
+        // for the inventory. When set to true, the advertising system in the
+        // asi field pays the seller in the sid field, who is responsible for
+        // paying the previous node in the chain. When set to false, this node
+        // is not involved in the flow of payment for the inventory.
+        // For version 1.0 of SupplyChain, this property should always be true.
+        // Implementers should ensure that they propagate this field onwards
+        // when constructing SupplyChain objects in bid requests sent to a
+        // downstream advertising system.
+        // Supported by Google.
+        optional bool hp = 6;
+        extensions 100 to 9999;
+      }
+
+      // Array of SupplyChainNode objects in the order of the chain.
+      // In a complete supply chain, the first node represents the initial
+      // advertising system and seller ID involved in the transaction, that is,
+      // the owner of the site, app, or other medium. In an incomplete
+      // supply chain, it represents the first known node. The last node
+      // represents the entity sending this bid request.
+      // REQUIRED by the OpenRTB specification.
+      // Supported by Google.
+      repeated SupplyChainNode nodes = 2;
+
+      // Version of the supply chain specification in use, in the format
+      // of "major.minor". For example, for version 1.0 of the spec,
+      // use the string "1.0".
+      // REQUIRED by the OpenRTB specification.
+      // Supported by Google.
+      optional string ver = 3;
+      extensions 100 to 9999;
+    }
+
+    // This object represents both the links in the supply chain as
+    // well as an indicator whether or not the supply chain is complete.
+    // Supported by Google.
+    optional SupplyChain schain = 4;
+
     // Extensions.
     extensions 100 to 9999;
   }
@@ -1043,6 +1134,11 @@ message BidRequest {
     // Browser language using ISO-639-1-alpha-2.
     optional string language = 11;
 
+    // Browser language using IETF BCP 47.
+    // Only one of language or langb should be present.
+    // Not supported by Google.
+    optional string langb = 32;
+
     // Device make (e.g., "Apple").
     optional string make = 12;
 
@@ -1275,6 +1371,11 @@ message BidRequest {
     // the alternate representation may require custom handling of the JSON.
     optional string keywords = 5;
 
+    // Array of keywords about the user.
+    // Only one of 'keywords' or 'kwarray' may be present.
+    // Not supported by Google.
+    repeated string kwarray = 9;
+
     // Optional feature to pass bidder data set in the exchange's cookie.
     // The string must be in base85 cookie safe characters and be in any format.
     // Proper JSON encoding must be used to include "escaped" quotation marks.
@@ -1287,6 +1388,56 @@ message BidRequest {
     // Additional user data. Each Data object (Section 3.2.14) represents a
     // different data source.
     repeated Data data = 8;
+
+    // The web-safe base64-encoded IAB Transparency and Consent Framework (TCF)
+    // v2 consent string fetched from the publisher's IAB Consent Management
+    // Platform (CMP). The structure of the string is defined by the IAB TCF v2.
+    // This field will be populated if the publisher has integrated with a CMP
+    // for TCF v2 and that CMP indicates that GDPR applies to this ad request
+    // and provides a valid consent string. See
+    // https://support.google.com/authorizedbuyers/answer/9789378 for additional
+    // information about the Google TCF v2 integration.
+    //
+    // See the IAB Global Vendor List at
+    // https://vendor-list.consensu.org/v2/vendor-list.json for details about
+    // the vendors listed in the consent string.
+    // Not supported by Google. Google supports the IAB TCFv2 consent string
+    // with the extension BidRequest.user.ext.consent.
+    optional string consent = 10;
+
+    // Extended data, such as a publisher-provided identifier, that allows
+    // buyers to use data made available by the publisher in real-time bidding.
+    // This object can contain one or more UIDs from a single source or a
+    // technology provider.
+    message EID {
+      // Source or technology provider responsible for the set of included data.
+      // Supported by Google.
+      optional string source = 1;
+
+      // This object contains a single data item, such as a publisher-provided
+      // identifier, provided as part of extended identifiers.
+      message UID {
+        // The data value, such as a publisher-provided identifier.
+        // Supported by Google.
+        optional string id = 1;
+
+        // Type of user agent the ID is from.
+        // Not supported by Google.
+        optional AgentType atype = 2;
+        extensions 100 to 9999;
+      }
+
+      // Array of extended ID UID objects from the given source.
+      // Supported by Google.
+      repeated UID uids = 2;
+      extensions 100 to 9999;
+    }
+
+    // Data made available by the publisher, such as publisher-provided
+    // identifiers.
+    // Supported by Google. For Secure Signals, see extension
+    // BidRequest.user.ext.eids.
+    repeated EID eids = 11;
 
     // Extensions.
     extensions 100 to 9999;
@@ -1527,6 +1678,11 @@ message BidResponse {
       // code "xx" may also be used if the creative has no
       // linguistic content (e.g., a banner with just a company logo).
       optional string language = 25;
+
+      // Language of the creative using IETF BCP 47.
+      // Only one of language or langb should be present.
+      // Ignored by Google.
+      optional string langb = 29;
 
       // Relative width of the creative when expressing size as a ratio.
       // Required for Flex Ads.
@@ -2873,6 +3029,21 @@ enum CreativeMarkupType {
   // Native markup response object returned as per for the BidRequest.imp.native
   // object specification.
   CREATIVE_MARKUP_NATIVE = 4;
+}
+
+// OpenRTB 2.6: The user agent types a user identifier is from.
+// Not supported by Google.
+enum AgentType {
+  // An ID which is tied to a specific web browser or device (cookie-based,
+  // probabilistic, or other).
+  BROWSER_OR_DEVICE = 1;
+
+  // In-app impressions, which will typically contain a type of device ID
+  // (or rather, the privacy-compliant versions of device IDs).
+  IN_APP_IMPRESSION = 2;
+
+  // An identifier that is the same across devices.
+  STABLE_ID = 3;
 }
 
 // ***** OpenRTB Native enums **************************************************
