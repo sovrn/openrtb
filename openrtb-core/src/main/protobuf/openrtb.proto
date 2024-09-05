@@ -1410,9 +1410,28 @@ message BidRequest {
     // This object can contain one or more UIDs from a single source or a
     // technology provider.
     message EID {
-      // Source or technology provider responsible for the set of included data.
-      // Supported by Google.
-      optional string source = 1;
+      // The canonical domain name of the entity (publisher, publisher monetization company, SSP, Exchange,
+      // Header Wrapper, etc) that caused the ID array element to be added. This may be the operational domain of
+      // the system, if that is different from the parent corporate domain, to facilitate WHOIS and reverse IP
+      // lookups to establish clear ownership of the delegate system.
+      // This should be the same value as used to identify sellers in an ads.txt file if one exists.
+      // For ad tech intermediaries, this would be their domain as used in ads.txt. For publishers,
+      // this would match the domain in the site or app object.
+      optional string inserter = 1;
+
+      // Canonical domain of the ID.
+      // EXAMPLES FOR PUBLIC COMMENT PERIOD ONLY
+      // Examples of a universal ID include “id5.io”, “liveramp.com”, “unifiedid.com”.
+      // Examples of a device ID include “apple.com”, “samsung.com”, “roku.com”.
+      optional string source = 2;
+
+      // Technology providing the match method as defined in mm. In some cases, this may be the same value as inserter.
+      // When blank, it is assumed that the matcher is equal to the source May be omitted when mm=0, 1, or 2.
+      // EXAMPLES FOR PUBLIC COMMENT ONLY: LiveIntent, Transunion, LiveRamp
+      optional string matcher = 3;
+
+      // Match method used by the matcher. Refer to https://github.com/InteractiveAdvertisingBureau/AdCOM/blob/develop/AdCOM%20v1.0%20FINAL.md#list-id-match-methods- in AdCOM 1.0
+      optional int32 mm = 4;
 
       // This object contains a single data item, such as a publisher-provided
       // identifier, provided as part of extended identifiers.
@@ -1429,7 +1448,7 @@ message BidRequest {
 
       // Array of extended ID UID objects from the given source.
       // Supported by Google.
-      repeated UID uids = 2;
+      repeated UID uids = 5;
       extensions 100 to 9999;
     }
 
