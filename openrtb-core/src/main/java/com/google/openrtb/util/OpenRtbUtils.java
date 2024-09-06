@@ -29,7 +29,6 @@ import com.google.openrtb.OpenRtb.BidResponse;
 import com.google.openrtb.OpenRtb.BidResponse.SeatBid;
 import com.google.openrtb.OpenRtb.BidResponse.SeatBid.Bid;
 import com.google.openrtb.OpenRtb.BidResponse.SeatBidOrBuilder;
-import com.google.openrtb.OpenRtb.ContentCategory;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -58,47 +57,6 @@ public final class OpenRtbUtils {
    * than an equivalent {@code imp -> true} predicate.
    */
   public static final Predicate<Imp> IMP_ALL = imp -> true;
-
-  private static final ImmutableMap<Object, String> CAT_TO_JSON;
-  private static final ImmutableMap<String, ContentCategory> NAME_TO_CAT;
-
-  static {
-    ImmutableMap.Builder<Object, String> catToJson = ImmutableMap.builder();
-    ImmutableMap.Builder<String, ContentCategory> nameToCat = ImmutableMap.builder();
-    for (ContentCategory cat : ContentCategory.values()) {
-      String json = cat.name().replace('_', '-');
-      catToJson.put(cat.name(), json);
-      catToJson.put(cat, json);
-      nameToCat.put(cat.name(), cat);
-      if (!json.equals(cat.name())) {
-        catToJson.put(json, json);
-        nameToCat.put(json, cat);
-      }
-    }
-    CAT_TO_JSON = catToJson.build();
-    NAME_TO_CAT = nameToCat.build();
-  }
-
-  /**
-   * Get a {@link ContentCategory} from its name (either Java or JSON name).
-   */
-  @Nullable public static ContentCategory categoryFromName(@Nullable String catName) {
-    return NAME_TO_CAT.get(catName);
-  }
-
-  /**
-   * Get a {@link ContentCategory}'s JSON name, from its Java name.
-   */
-  @Nullable public static String categoryToJsonName(@Nullable String catName) {
-    return CAT_TO_JSON.get(catName);
-  }
-
-  /**
-   * Get a {@link ContentCategory}'s JSON name.
-   */
-  @Nullable public static String categoryToJsonName(@Nullable ContentCategory cat) {
-    return CAT_TO_JSON.get(cat);
-  }
 
   /**
    * @return The OpenRTB SeatBid with the specified ID; will be created if not existent.
